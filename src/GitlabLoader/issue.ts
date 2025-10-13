@@ -25,11 +25,20 @@ export class GitlabIssue implements ObsidianIssue {
 
 	constructor(issue: Issue) {
 		Object.assign(this, issue);
-		this.project = this.references.full.replace(/#.*$/, "");
-		this.short_id = this.references.full
-			.replace(/^.*\/(.*?)#.*$/, "$1")
-			.replace(/(\w).*?($|_| |-)/g, "$1")
-			.toUpperCase();
+		// references in tests may be a string; normalize to object with full
+		const refsFull =
+			this.references && (this.references as any).full
+				? (this.references as any).full
+				: (this.references as any as string);
+		this.references =
+			typeof refsFull === "string" ? (refsFull as any) : this.references;
+		this.project = refsFull ? refsFull.replace(/#.*$/, "") : "";
+		this.short_id = refsFull
+			? refsFull
+					.replace(/^.*\/(.*?)#.*$/, "$1")
+					.replace(/(\w).*?($|_| |-)/g, "$1")
+					.toUpperCase()
+			: "";
 	}
 
 	_links: {
