@@ -1,14 +1,23 @@
-import {sanitizeFileName} from '../utils/utils';
-import {Assignee, Epic, Issue, ObsidianIssue, References, ShortIssue, TimeStats} from "./issue-types";
+import { sanitizeFileName } from "../utils/utils";
+import {
+	Assignee,
+	Epic,
+	Issue,
+	ObsidianIssue,
+	References,
+	ShortIssue,
+	TimeStats,
+} from "./issue-types";
 
 export class GitlabIssue implements ObsidianIssue {
-
 	id: number;
 	title: string;
 	description: string;
 	due_date: string;
 	web_url: string;
-	references: string | References;
+	references: References;
+	project: string;
+	short_id: string;
 
 	get filename() {
 		return sanitizeFileName(this.title);
@@ -16,6 +25,11 @@ export class GitlabIssue implements ObsidianIssue {
 
 	constructor(issue: Issue) {
 		Object.assign(this, issue);
+		this.project = this.references.full.replace(/#.*$/, "");
+		this.short_id = this.references.full
+			.replace(/^.*\/(.*?)#.*$/, "$1")
+			.replace(/(\w).*?($|_| |-)/g, "$1")
+			.toUpperCase();
 	}
 
 	_links: {
@@ -23,7 +37,7 @@ export class GitlabIssue implements ObsidianIssue {
 		notes: string;
 		award_emoji: string;
 		project: string;
-		closed_as_duplicate_of: string
+		closed_as_duplicate_of: string;
 	};
 	assignees: Assignee[];
 	author: Assignee;
