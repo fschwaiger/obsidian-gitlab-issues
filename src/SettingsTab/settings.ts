@@ -22,10 +22,11 @@ export const settings: SettingsTab = {
 	title: "GitLab Issues Configuration",
 	settingInputs: [
 		{
-			title: "Gitlab instance URL",
+			title: "Sources (JSON)",
 			description:
-				"Use your own Gitlab instance instead of the public hosted Gitlab.",
-			placeholder: "https://gitlab.com",
+				"Edit the list of sources as JSON. Each source should include gitlabUrl, gitlabIssuesLevel, gitlabAppId, gitlabToken (optional) and filter.",
+			placeholder:
+				'[ { "gitlabUrl": "https://gitlab.com", "gitlabIssuesLevel": "personal", "gitlabAppId": "", "filter": "due_date=month" } ]',
 			value: "sources",
 		},
 		{

@@ -47,143 +47,34 @@ export class GitlabIssuesSettingTab extends PluginSettingTab {
 				.setDesc(setting.description);
 
 			if (setting.value === "sources") {
-				// interactive repeater for sources
-				const sourcesContainer = containerEl.createDiv({
-					cls: "gitlab-sources-container",
-				});
-
-				const renderSources = () => {
-					// clear existing
-					sourcesContainer.empty();
-
-					const sources = this.plugin.settings.sources || [];
-
-					sources.forEach((src, idx) => {
-						const srcDiv = sourcesContainer.createDiv({
-							cls: "gitlab-source",
-						});
-
-						// header with remove button
-						const header = srcDiv.createDiv({
-							cls: "gitlab-source-header",
-						});
-						header.createEl("strong", {
-							text: `Source ${idx + 1}`,
-						});
-						const removeBtn = header.createEl("button", {
-							text: "Remove",
-						});
-						removeBtn.addEventListener("click", async () => {
-							(this.plugin.settings.sources as any).splice(
-								idx,
-								1
-							);
-							await this.plugin.saveSettings();
-							renderSources();
-						});
-
-						// gitlabUrl
-						new Setting(srcDiv).setName("GitLab URL").addText((t) =>
-							t
-								.setPlaceholder("https://gitlab.com")
-								.setValue(src.gitlabUrl || "")
-								.onChange(async (v) => {
-									(this.plugin.settings.sources as any)[
-										idx
-									].gitlabUrl = v;
-									await this.plugin.saveSettings();
-								})
-						);
-
-						// issues level dropdown
-						new Setting(srcDiv).setName("Scope").addDropdown((d) =>
-							d
-								.addOptions({
-									personal: "Personal",
-									project: "Project",
-									group: "Group",
-								})
-								.setValue(src.gitlabIssuesLevel)
-								.onChange(async (v) => {
-									(this.plugin.settings.sources as any)[
-										idx
-									].gitlabIssuesLevel = v as any;
-									await this.plugin.saveSettings();
-								})
-						);
-
-						// app id
-						new Setting(srcDiv)
-							.setName("App / Project / Group ID")
-							.addText((t) =>
-								t
-									.setPlaceholder(
-										"ID (required for project/group)"
-									)
-									.setValue(src.gitlabAppId || "")
-									.onChange(async (v) => {
-										(this.plugin.settings.sources as any)[
-											idx
-										].gitlabAppId = v;
-										await this.plugin.saveSettings();
-									})
-							);
-
-						// token
-						new Setting(srcDiv)
-							.setName("Personal Access Token")
-							.addText((t) =>
-								t
-									.setPlaceholder("Token (optional)")
-									.setValue(src.gitlabToken || "")
-									.onChange(async (v) => {
-										(this.plugin.settings.sources as any)[
-											idx
-										].gitlabToken = v;
-										await this.plugin.saveSettings();
-									})
-							);
-
-						// filter
-						new Setting(srcDiv)
-							.setName("Filter")
-							.setDesc(
-								"The query string used to filter the issues."
-							)
-							.addText((t) =>
-								t
-									.setPlaceholder("due_date=month")
-									.setValue(src.filter || "")
-									.onChange(async (v) => {
-										(this.plugin.settings.sources as any)[
-											idx
-										].filter = v;
-										await this.plugin.saveSettings();
-									})
-							);
-					});
-
-					// add button
-					sourcesContainer
-						.createEl("div", { cls: "gitlab-source-add" })
-						.createEl("button", { text: "Add source" })
-						.addEventListener("click", async () => {
-							const list = this.plugin.settings.sources || [];
-							list.push({
-								gitlabUrl: "https://gitlab.com",
-								gitlabIssuesLevel: "personal",
-								gitlabAppId: "",
-								gitlabToken: "",
-								filter: "due_date=month",
-							});
-							(this.plugin.settings as any).sources = list;
-							await this.plugin.saveSettings();
-							renderSources();
-						});
-				};
-
-				// initial render
-				renderSources();
+				// Render sources as editable JSON
+				const current = this.plugin.settings.sources || [];
+				newSetting.addTextArea((ta) =>
+					ta
+						.setPlaceholder(
+							'[{"gitlabUrl":"https://gitlab.com","gitlabIssuesLevel":"personal","gitlabAppId":"","gitlabToken":"","filter":"due_date=month"}]'
+						)
+						.setValue(JSON.stringify(current, null, 2))
+						.onChange(async (value) => {
+							try {
+								const parsed = JSON.parse(value || "null");
+								if (!Array.isArray(parsed)) {
+									newSetting.setDesc(
+										"Invalid JSON: expected an array of sources"
+									);
+									return;
+								}
+								// Optionally, could validate shape here; for now accept as-is
+								(this.plugin.settings as any).sources = parsed;
+								await this.plugin.saveSettings();
+								newSetting.setDesc(setting.description);
+							} catch (err) {
+								newSetting.setDesc(
+									"Invalid JSON: " + (err as Error).message
+								);
+							}
+						})
+				);
 			} else {
 				newSetting.addText((text) =>
 					text

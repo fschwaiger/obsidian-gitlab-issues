@@ -6,10 +6,10 @@ import GitlabApi from "../../src/GitlabLoader/gitlab-api";
 import { Issue } from "../../src/GitlabLoader/issue-types";
 import { GitlabIssue } from "../../src/GitlabLoader/issue";
 
-const mockPurgeExistingIssues = jest.fn();
+const mockPurgeRemovedIssues = jest.fn();
 const mockProcessIssues = jest.fn();
 const mockFileSystem = jest.spyOn(Filesystem, "default").mockReturnValue({
-	purgeExistingIssues: mockPurgeExistingIssues,
+	purgeRemovedIssues: mockPurgeRemovedIssues,
 	processIssues: mockProcessIssues,
 } as any);
 
@@ -105,7 +105,7 @@ describe("GitlabLoader", () => {
 			encodeURI(gitlabLoader.getUrl()),
 			mockSettings.sources![0].gitlabToken
 		);
-		expect(mockPurgeExistingIssues).toHaveBeenCalled();
+		expect(mockPurgeRemovedIssues).toHaveBeenCalled();
 		expect(mockProcessIssues).toHaveBeenCalledWith(
 			expect.arrayContaining([expect.any(GitlabIssue)])
 		);
