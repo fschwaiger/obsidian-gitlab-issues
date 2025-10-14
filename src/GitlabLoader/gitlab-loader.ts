@@ -95,7 +95,7 @@ export default class GitlabLoader {
 				const uniqueIssues = Array.from(uniqueMap.values());
 
 				if (this.settings.purgeIssues) {
-					this.fs.purgeExistingIssues();
+					this.fs.purgeRemovedIssues(uniqueIssues);
 				}
 				this.fs.processIssues(uniqueIssues);
 			})

@@ -139,5 +139,6 @@ export default class GitlabIssuesPlugin extends Plugin {
 		new Notice("Updating issues from Gitlab");
 		const loader = new GitlabLoader(this.app, this.settings);
 		loader.loadIssues();
+		new Notice("Gitlab issues update completed");
 	}
 }

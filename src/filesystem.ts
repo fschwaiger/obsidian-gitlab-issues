@@ -22,16 +22,23 @@ export default class Filesystem {
 		});
 	}
 
-	public purgeExistingIssues() {
+	public purgeRemovedIssues(issues: Array<ObsidianIssue>) {
 		const outputDir: TAbstractFile | null =
 			this.vault.getAbstractFileByPath(this.settings.outputDir);
 
 		if (outputDir instanceof TFolder) {
 			Vault.recurseChildren(outputDir, (existingFile: TAbstractFile) => {
 				if (existingFile instanceof TFile) {
-					this.vault
-						.delete(existingFile)
-						.catch((error) => logger(error.message));
+					if (
+						!issues.find(
+							(issue) =>
+								this.buildFileName(issue) === existingFile.path
+						)
+					) {
+						this.vault
+							.delete(existingFile)
+							.catch((error) => logger(error.message));
+					}
 				}
 			});
 		}
@@ -56,9 +63,12 @@ export default class Filesystem {
 		issue: ObsidianIssue,
 		template: HandlebarsTemplateDelegate
 	) {
-		this.vault
-			.create(this.buildFileName(issue), template(issue))
-			.catch((error) => logger(error.message));
+		const name = this.buildFileName(issue);
+		const file = this.vault.getAbstractFileByPath(name);
+		(file !== null && file instanceof TFile
+			? this.vault.modify(file as TFile, template(issue))
+			: this.vault.create(name, template(issue))
+		).catch((error) => logger(error.message));
 	}
 
 	private buildFileName(issue: ObsidianIssue): string {
