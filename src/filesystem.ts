@@ -72,6 +72,6 @@ export default class Filesystem {
 	}
 
 	private buildFileName(issue: ObsidianIssue): string {
-		return this.settings.outputDir + "/" + issue.filename + ".md";
+		return this.settings.outputDir + "/" + issue.id + ".md";
 	}
 }
