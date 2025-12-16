@@ -1,16 +1,19 @@
 export type GitlabIssuesLevel = "personal" | "project" | "group";
 export type GitlabRefreshInterval = "15" | "30" | "45" | "60" | "120" | "off";
 
+export interface GitlabSource {
+	description?: string;
+	gitlabUrl?: string;
+	gitlabScope?: string;
+	gitlabToken?: string;
+	filter?: string;
+}
+
 export interface GitlabIssuesSettings {
 	templateFile: string;
 	outputDir: string;
-	sources?: Array<{
-		gitlabUrl: string;
-		gitlabIssuesLevel: GitlabIssuesLevel;
-		gitlabAppId: string;
-		gitlabToken?: string;
-		filter: string;
-	}>;
+	default: GitlabSource;
+	sources?: Array<GitlabSource>;
 	showIcon: boolean;
 	purgeIssues: boolean;
 	refreshOnStartup: boolean;
@@ -29,7 +32,7 @@ export interface Setting {
 export interface SettingInput extends Setting {
 	value: keyof Pick<
 		GitlabIssuesSettings,
-		"sources" | "outputDir" | "templateFile"
+		"default" | "sources" | "outputDir" | "templateFile"
 	>;
 	modifier?: string;
 }

@@ -52,37 +52,11 @@ export default class GitlabIssuesPlugin extends Plugin {
 	onunload() {}
 
 	async loadSettings() {
-		// Load raw data so we can migrate any legacy top-level fields into the new `sources` array
-		const raw = await this.loadData();
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, raw);
-
-		if (!this.settings.sources || this.settings.sources.length === 0) {
-			// Migrate legacy top-level fields if present in raw
-			const legacyToken =
-				raw && (raw as any).gitlabToken ? (raw as any).gitlabToken : "";
-			const legacyLevel =
-				raw && (raw as any).gitlabIssuesLevel
-					? (raw as any).gitlabIssuesLevel
-					: DEFAULT_SETTINGS.sources![0].gitlabIssuesLevel;
-			const legacyAppId =
-				raw && (raw as any).gitlabAppId
-					? (raw as any).gitlabAppId
-					: DEFAULT_SETTINGS.sources![0].gitlabAppId;
-			const legacyFilter =
-				raw && (raw as any).filter
-					? (raw as any).filter
-					: DEFAULT_SETTINGS.sources![0].filter;
-
-			this.settings.sources = [
-				{
-					gitlabUrl: DEFAULT_SETTINGS.sources![0].gitlabUrl,
-					gitlabIssuesLevel: legacyLevel as any,
-					gitlabAppId: legacyAppId,
-					gitlabToken: legacyToken,
-					filter: legacyFilter,
-				},
-			];
-		}
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData()
+		);
 	}
 
 	async saveSettings() {

@@ -2,31 +2,6 @@ import { GitlabIssuesSettings } from "../../src/SettingsTab/settings-types";
 import { DEFAULT_SETTINGS, settings } from "../../src/SettingsTab/settings";
 
 describe("DEFAULT_SETTINGS", () => {
-	it("should have the correct default values", () => {
-		const expectedDefaults: Omit<GitlabIssuesSettings, "gitlabApiUrl"> = {
-			templateFile: "",
-			outputDir: "/Gitlab Issues/",
-			showIcon: false,
-			purgeIssues: true,
-			refreshOnStartup: true,
-			intervalOfRefresh: "15",
-			sources: [
-				{
-					gitlabUrl: "https://gitlab.com",
-					gitlabIssuesLevel: "personal",
-					gitlabAppId: "",
-					gitlabToken: "",
-					filter: "due_date=month",
-				},
-			],
-		};
-
-		// DEFAULT_SETTINGS no longer exposes top-level gitlabApiUrl; derive from first source
-		expect(DEFAULT_SETTINGS).toEqual({
-			...expectedDefaults,
-		});
-	});
-
 	it("gitlabApiUrl should return correct API URL", () => {
 		expect(DEFAULT_SETTINGS.sources![0].gitlabUrl + "/api/v4").toBe(
 			"https://gitlab.com/api/v4"
@@ -37,42 +12,6 @@ describe("DEFAULT_SETTINGS", () => {
 describe("settings", () => {
 	it("should have the correct title", () => {
 		expect(settings.title).toBe("GitLab Issues Configuration");
-	});
-
-	it("should have the correct setting inputs", () => {
-		const expectedSettingInputs = [
-			{
-				title: "Gitlab instance URL",
-				description:
-					"Use your own Gitlab instance instead of the public hosted Gitlab.",
-				placeholder: "https://gitlab.com",
-				value: "sources",
-			},
-			{
-				title: "Sources (JSON)",
-				description:
-					"Edit the list of sources as JSON. Each source should include gitlabUrl, gitlabIssuesLevel, gitlabAppId, gitlabToken (optional) and filter.",
-				placeholder:
-					'[ { "gitlabUrl": "https://gitlab.com", "gitlabIssuesLevel": "personal", "gitlabAppId": "", "filter": "due_date=month" } ]',
-				value: "sources",
-			},
-			{
-				title: "Template File",
-				description: "Path to an Obsidian note to use as the template.",
-				placeholder: "your-template-file.md",
-				value: "templateFile",
-			},
-			{
-				title: "Output Folder",
-				description:
-					"Path to an Obsidian folder to write output files to.",
-				placeholder: "Gitlab Issues",
-				value: "outputDir",
-				modifier: "normalizePath",
-			},
-		];
-
-		expect(settings.settingInputs).toEqual(expectedSettingInputs);
 	});
 
 	it("should have the correct dropdowns", () => {

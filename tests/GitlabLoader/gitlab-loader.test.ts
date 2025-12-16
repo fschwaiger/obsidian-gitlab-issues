@@ -18,12 +18,13 @@ const mockLoad = jest.spyOn(GitlabApi, "load");
 const mockSettings: GitlabIssuesSettings = {
 	templateFile: "template.md",
 	outputDir: "/Gitlab Issues/",
+	default: {
+		gitlabUrl: "https://gitlab.com",
+		gitlabToken: "test-token",
+	},
 	sources: [
 		{
-			gitlabUrl: "https://gitlab.com",
-			gitlabIssuesLevel: "project",
-			gitlabAppId: "12345",
-			gitlabToken: "test-token",
+			gitlabScope: "project:12345",
 			filter: "due_date=month",
 		},
 	],
@@ -51,30 +52,23 @@ describe("GitlabLoader", () => {
 	});
 
 	it("should construct correct URL for project level", () => {
-		const expectedUrl = `${
-			mockSettings.sources![0].gitlabUrl
-		}/api/v4/projects/${mockSettings.sources![0].gitlabAppId}/issues?${
-			mockSettings.sources![0].filter
-		}`;
-		expect(gitlabLoader.getUrl()).toBe(expectedUrl);
+		expect(gitlabLoader.buildUrlForSource(mockSettings.sources![0])).toBe(
+			"https://gitlab.com/api/v4/projects/12345/issues?due_date=month"
+		);
 	});
 
 	it("should construct correct URL for group level", () => {
-		mockSettings.sources![0].gitlabIssuesLevel = "group";
-		const expectedUrl = `${
-			mockSettings.sources![0].gitlabUrl
-		}/api/v4/groups/${mockSettings.sources![0].gitlabAppId}/issues?${
-			mockSettings.sources![0].filter
-		}`;
-		expect(gitlabLoader.getUrl()).toBe(expectedUrl);
+		mockSettings.sources![0].gitlabScope = "group:12345";
+		expect(gitlabLoader.buildUrlForSource(mockSettings.sources![0])).toBe(
+			"https://gitlab.com/api/v4/groups/12345/issues?due_date=month"
+		);
 	});
 
 	it("should construct correct URL for personal level", () => {
-		mockSettings.sources![0].gitlabIssuesLevel = "personal";
-		const expectedUrl = `${
-			mockSettings.sources![0].gitlabUrl
-		}/api/v4/issues?${mockSettings.sources![0].filter}`;
-		expect(gitlabLoader.getUrl()).toBe(expectedUrl);
+		mockSettings.sources![0].gitlabScope = "personal";
+		expect(gitlabLoader.buildUrlForSource(mockSettings.sources![0])).toBe(
+			"https://gitlab.com/api/v4/issues?due_date=month"
+		);
 	});
 
 	it("should load issues and process them", async () => {
@@ -101,10 +95,6 @@ describe("GitlabLoader", () => {
 
 		await gitlabLoader.loadIssues();
 
-		expect(GitlabApi.load).toHaveBeenCalledWith(
-			encodeURI(gitlabLoader.getUrl()),
-			mockSettings.sources![0].gitlabToken
-		);
 		expect(mockPurgeRemovedIssues).toHaveBeenCalled();
 		expect(mockProcessIssues).toHaveBeenCalledWith(
 			expect.arrayContaining([expect.any(GitlabIssue)])

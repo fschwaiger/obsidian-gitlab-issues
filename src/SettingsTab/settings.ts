@@ -3,13 +3,13 @@ import { GitlabIssuesSettings, SettingsTab } from "./settings-types";
 export const DEFAULT_SETTINGS: GitlabIssuesSettings = {
 	templateFile: "",
 	outputDir: "/Gitlab Issues/",
+	default: {
+		gitlabUrl: "https://gitlab.com",
+		filter: "due_date=month",
+	},
 	sources: [
 		{
-			gitlabUrl: "https://gitlab.com",
-			gitlabIssuesLevel: "personal",
-			gitlabAppId: "",
-			gitlabToken: "",
-			filter: "due_date=month",
+			gitlabScope: "personal",
 		},
 	],
 	showIcon: false,
@@ -22,11 +22,25 @@ export const settings: SettingsTab = {
 	title: "GitLab Issues Configuration",
 	settingInputs: [
 		{
+			title: "Source Defaults (JSON)",
+			description: "Edit the default settings for all sources as JSON.",
+			placeholder:
+				"{\n" +
+				'    "gitlabUrl": "https://gitlab.com",\n' +
+				'    "filter": "due_date=month"\n' +
+				"}\n",
+			value: "default",
+		},
+		{
 			title: "Sources (JSON)",
 			description:
-				"Edit the list of sources as JSON. Each source should include gitlabUrl, gitlabIssuesLevel, gitlabAppId, gitlabToken (optional) and filter.",
+				"Edit the list of sources as JSON. Each source should include gitlabUrl, gitlabScope, and filter.",
 			placeholder:
-				'[ { "gitlabUrl": "https://gitlab.com", "gitlabIssuesLevel": "personal", "gitlabAppId": "", "filter": "due_date=month" } ]',
+				"[\n" +
+				"    {\n" +
+				'        "gitlabScope": "personal"\n' +
+				"    }\n" +
+				"]\n",
 			value: "sources",
 		},
 		{

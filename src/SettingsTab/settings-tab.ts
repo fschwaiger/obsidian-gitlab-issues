@@ -32,6 +32,13 @@ export class GitlabIssuesSettingTab extends PluginSettingTab {
 						this.plugin.settings[setting.value] as string
 					);
 				}
+				if (setting.value === "default") {
+					return JSON.stringify(
+						this.plugin.settings.default || {},
+						null,
+						2
+					);
+				}
 				if (setting.value === "sources") {
 					return JSON.stringify(
 						this.plugin.settings.sources || [],
@@ -52,7 +59,7 @@ export class GitlabIssuesSettingTab extends PluginSettingTab {
 				newSetting.addTextArea((ta) =>
 					ta
 						.setPlaceholder(
-							'[{"gitlabUrl":"https://gitlab.com","gitlabIssuesLevel":"personal","gitlabAppId":"","gitlabToken":"","filter":"due_date=month"}]'
+							'[{"gitlabScope":"personal","filter":"due_date=month"}]'
 						)
 						.setValue(JSON.stringify(current, null, 2))
 						.onChange(async (value) => {
@@ -66,6 +73,35 @@ export class GitlabIssuesSettingTab extends PluginSettingTab {
 								}
 								// Optionally, could validate shape here; for now accept as-is
 								(this.plugin.settings as any).sources = parsed;
+								await this.plugin.saveSettings();
+								newSetting.setDesc(setting.description);
+							} catch (err) {
+								newSetting.setDesc(
+									"Invalid JSON: " + (err as Error).message
+								);
+							}
+						})
+				);
+			} else if (setting.value === "default") {
+				// Render sources as editable JSON
+				const current = this.plugin.settings.default || {};
+				newSetting.addTextArea((ta) =>
+					ta
+						.setPlaceholder(
+							'{"gitlabUrl":"https://gitlab.com","gitlabToken":""}'
+						)
+						.setValue(JSON.stringify(current, null, 2))
+						.onChange(async (value) => {
+							try {
+								const parsed = JSON.parse(value || "null");
+								if (Array.isArray(parsed)) {
+									newSetting.setDesc(
+										"Invalid JSON: expected a dictionary"
+									);
+									return;
+								}
+								// Optionally, could validate shape here; for now accept as-is
+								(this.plugin.settings as any).default = parsed;
 								await this.plugin.saveSettings();
 								newSetting.setDesc(setting.description);
 							} catch (err) {
